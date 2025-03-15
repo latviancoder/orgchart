@@ -1,8 +1,6 @@
 import './styles.css';
 
 import styles from './Org.module.css';
-import { VerticalLine } from './VerticalLine.tsx';
-import { HorizontalLine } from './HorizontalLine.tsx';
 import { PersonBox } from './PersonBox.tsx';
 import { Container } from './Container.tsx';
 import { organization, PersonType } from './organization.ts';
@@ -17,10 +15,8 @@ function dfs(person: PersonType, level: number = 1) {
   let totalCount = 0;
   const children = person.children || [];
 
-  children.forEach((child, i) => {
+  children.forEach((child) => {
     child.parent = person;
-    child.firstChild = i === 0;
-    child.lastChild = i === children.length - 1;
 
     totalCount += dfs(child, level + 1);
   });
@@ -37,7 +33,7 @@ function bfs(start: PersonType) {
   const queue = [start];
 
   let offset = 0;
-  let prevParent: PersonType | undefined = start.parent;
+  let prevParent: PersonType | undefined = undefined;
 
   while (queue.length > 0) {
     const person = queue.shift()!;
@@ -64,54 +60,27 @@ function bfs(start: PersonType) {
 
 bfs(organization[0]);
 
-export const CELL_SIZE = 150;
+export const BOX_SIZE = 150;
 export const SPACING = 20;
 
 function Person({
   level = 1,
   offset = 0,
   children,
-  parent,
   maxChildren,
   id,
-  firstChild,
-  lastChild,
 }: PersonType) {
   return (
     <>
       <div
         className={styles.personContainer}
         style={{
-          top: (level - 1) * CELL_SIZE,
-          left: offset * CELL_SIZE,
-          width: CELL_SIZE * (maxChildren || 1),
-          height: CELL_SIZE,
+          top: (level - 1) * BOX_SIZE,
+          left: offset * BOX_SIZE,
+          width: BOX_SIZE * (maxChildren || 1),
+          height: BOX_SIZE,
         }}
       >
-        {!!parent && <VerticalLine position="top" />}
-        {!!children && <VerticalLine position="bottom" />}
-
-        {(parent?.children || [])?.length > 1 && firstChild && (
-          <HorizontalLine
-            left={Math.max(((maxChildren || 1) * CELL_SIZE) / 2, CELL_SIZE / 2)}
-            right={0}
-          />
-        )}
-
-        {(parent?.children || [])?.length > 1 && lastChild && (
-          <HorizontalLine
-            left={0}
-            right={Math.max(
-              ((maxChildren || 1) * CELL_SIZE) / 2,
-              CELL_SIZE / 2
-            )}
-          />
-        )}
-
-        {(parent?.children || [])?.length > 1 && !firstChild && !lastChild && (
-          <HorizontalLine left={0} right={0} />
-        )}
-
         <PersonBox
           id={id}
           offset={offset}
@@ -124,10 +93,62 @@ function Person({
   );
 }
 
+function ConnectingLine({
+  level = 1,
+  offset = 0,
+  children,
+  parent,
+  maxChildren = 1,
+}: PersonType) {
+  const startX =
+    (parent?.offset ?? 0) * BOX_SIZE +
+    ((parent?.maxChildren ?? 0) * BOX_SIZE) / 2;
+
+  const startY = (parent?.level ?? 0) * BOX_SIZE - SPACING;
+
+  const endX = offset * BOX_SIZE + (maxChildren * BOX_SIZE) / 2;
+
+  const endY = ((level ?? 0) - 1) * BOX_SIZE;
+
+  const bezier = [`M${startX} ${startY}`];
+
+  if (startX > endX) {
+    // lines going left
+    bezier.push(
+      `Q ${startX} ${startY + SPACING / 2} ${startX - SPACING} ${startY + SPACING / 2}`
+    );
+    bezier.push(`T ${endX + SPACING} ${startY + SPACING / 2}`);
+    bezier.push(`Q ${endX} ${startY + SPACING / 2} ${endX} ${endY}`);
+  } else if (startX < endX) {
+    // lines going right
+    bezier.push(
+      `Q ${startX} ${startY + SPACING / 2} ${startX + SPACING} ${startY + SPACING / 2}`
+    );
+    bezier.push(`T ${endX - SPACING} ${startY + SPACING / 2}`);
+    bezier.push(`Q ${endX} ${startY + SPACING / 2} ${endX} ${endY}`);
+  } else {
+    // lines going straight down
+    bezier.push(`L ${endX} ${endY}`);
+  }
+
+  return (
+    <>
+      <path
+        d={bezier.join(' ')}
+        fill="transparent"
+        stroke="#ccc"
+        strokeWidth={2}
+      />
+      {children?.map((child) => <ConnectingLine key={child.id} {...child} />)}
+    </>
+  );
+}
+
 export function Org() {
   return (
-    <Container>
-      <Person {...organization[0]} />
-    </Container>
+    <Container
+      people={<Person {...organization[0]} />}
+      lines={<ConnectingLine {...organization[0]} />}
+    />
   );
 }

@@ -1,13 +1,27 @@
-import { PropsWithChildren, useCallback, useEffect, useRef } from 'react';
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import Hammer from 'hammerjs';
 import styles from './Org.module.css';
 import { useAtom } from 'jotai';
 import { initialOffsetAtom, offsetAtom, zoomAtom } from './atoms.ts';
 
-export function Container({ children }: PropsWithChildren) {
+export function Container({
+  people,
+  lines,
+}: {
+  people: ReactNode;
+  lines: ReactNode;
+}) {
   const [offset, setOffset] = useAtom(offsetAtom);
   const [initialOffset, setInitialOffset] = useAtom(initialOffsetAtom);
   const [zoom, setZoom] = useAtom(zoomAtom);
+  const [rect, setRect] = useState({ width: 0, height: 0 });
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -58,6 +72,17 @@ export function Container({ children }: PropsWithChildren) {
     };
   }, [initialOffset, onWheel, setInitialOffset, setOffset]);
 
+  const resize = useCallback(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current!.getBoundingClientRect();
+      setRect(rect);
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    resize();
+  }, [resize]);
+
   return (
     <div className={styles.container} ref={containerRef}>
       <div
@@ -66,7 +91,14 @@ export function Container({ children }: PropsWithChildren) {
           transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${zoom})`,
         }}
       >
-        {children}
+        <svg
+          width={rect.width}
+          height={rect.height}
+          style={{ position: 'relative', zIndex: 100 }}
+        >
+          {lines}
+        </svg>
+        {people}
       </div>
     </div>
   );

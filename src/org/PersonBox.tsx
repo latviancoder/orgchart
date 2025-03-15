@@ -1,4 +1,4 @@
-import { CELL_SIZE, SPACING } from './Org.tsx';
+import { BOX_SIZE, SPACING } from './Org.tsx';
 
 import styles from './Org.module.css';
 
@@ -17,8 +17,8 @@ export function PersonBox({
     <div
       className={styles.person}
       style={{
-        width: CELL_SIZE - SPACING,
-        height: CELL_SIZE - SPACING,
+        width: BOX_SIZE - SPACING,
+        height: BOX_SIZE - SPACING,
       }}
     >
       <strong>{id}</strong>
