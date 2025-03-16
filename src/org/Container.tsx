@@ -41,9 +41,7 @@ export function Container({
 
   useEffect(() => {
     const $root = containerRef.current;
-    const mc = new Hammer.Manager(containerRef.current!, {
-      domEvents: true,
-    });
+    const mc = new Hammer.Manager(containerRef.current!);
 
     if ($root) {
       $root.addEventListener('wheel', onWheel);
@@ -94,7 +92,7 @@ export function Container({
         <svg
           width={rect.width}
           height={rect.height}
-          style={{ position: 'relative', zIndex: 100 }}
+          style={{ position: 'relative', zIndex: 1 }}
         >
           {lines}
         </svg>
