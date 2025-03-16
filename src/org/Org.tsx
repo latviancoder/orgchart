@@ -1,6 +1,5 @@
 import './styles.css';
 
-import styles from './Org.module.css';
 import { PersonBox } from './PersonBox.tsx';
 import { Container } from './Container.tsx';
 import { organization, PersonType } from './organization.ts';
@@ -63,31 +62,15 @@ bfs(organization[0]);
 export const BOX_SIZE = 150;
 export const SPACING = 20;
 
-function Person({
-  level = 1,
-  offset = 0,
-  children,
-  maxChildren,
-  id,
-}: PersonType) {
+function Person({ level, offset, children, maxChildren, id }: PersonType) {
   return (
     <>
-      <div
-        className={styles.personContainer}
-        style={{
-          top: (level - 1) * BOX_SIZE,
-          left: offset * BOX_SIZE,
-          width: BOX_SIZE * (maxChildren || 1),
-          height: BOX_SIZE,
-        }}
-      >
-        <PersonBox
-          id={id}
-          offset={offset}
-          level={level}
-          maxChildren={maxChildren}
-        />
-      </div>
+      <PersonBox
+        id={id}
+        offset={offset}
+        level={level}
+        maxChildren={maxChildren}
+      />
       {children?.map((child) => <Person key={child.id} {...child} />)}
     </>
   );

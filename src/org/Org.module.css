@@ -1,9 +1,3 @@
-.personContainer {
-  position: absolute;
-  display: flex;
-  justify-content: center;
-}
-
 .verticalLine {
   position: absolute;
   width: 1px;
@@ -19,6 +13,7 @@
 }
 
 .person {
+  position: absolute;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
